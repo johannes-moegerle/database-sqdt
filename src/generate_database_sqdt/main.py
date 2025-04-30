@@ -189,19 +189,25 @@ def populate_states_table(list_of_states: list[RydbergState], conn: "sqlite3.Con
 
 def populate_matrix_elements_table(list_of_states: list[RydbergState], conn: "sqlite3.Connection") -> None:
     k_angular_max = 3
+    max_delta_n = 10
+    all_n_up_to = 20
 
     element = list_of_states[0].element
     list_of_qns = [(ids, state.n, state.l, state.j) for ids, state in enumerate(list_of_states)]
 
     # sort the states by l for more efficient caching
-    qns_sorted_by_l = sorted(list_of_qns, key=lambda x: (x[2], x[0]))
+    qns_sorted_by_l = sorted(list_of_qns, key=lambda x: (x[2], x[1], x[0]))
 
     matrix_elements: dict[str, list[tuple[int, int, float]]] = {tkey: [] for tkey in MATRIX_ELEMENTS_OF_INTEREST}
     for i, (id1, n1, l1, j1) in enumerate(qns_sorted_by_l):
         qns_filtered = filter(lambda x: x[2] - l1 <= k_angular_max, qns_sorted_by_l[i:])
         for id2, n2, l2, j2 in qns_filtered:
-            # TODO add condition to break? or simply remove afterwards all elements that are to small
-            # (with respect to matrix element and lifetime relevance!)
+            if n1 > all_n_up_to and abs(n1 - n2) > max_delta_n:
+                # If delta_n is larger than max_delta_n, we dont calculate the matrix elements anymore,
+                # since these are so small, that they are usually not relevant for further calculations
+                # However, we keep all dipole interactions with small n (we choose all_n_up_to as a cutoff)
+                # since these are relevant for the spontaneous decay rates
+                continue
 
             id_tuple = (id1, id2) if id1 <= id2 else (id2, id1)
             qns = (n1, l1, j1, n2, l2, j2) if id1 <= id2 else (n2, l2, j2, n1, l1, j1)
