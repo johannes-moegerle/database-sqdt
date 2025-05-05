@@ -81,7 +81,7 @@ def main() -> None:
 
     configure_logging(args.log_level, args.species)
     time_start = time.perf_counter()
-    create_database_one_species(args.species, args.n_max)
+    create_tables_for_one_species(args.species, args.n_max)
     logger.info("Time taken: %.2f seconds", time.perf_counter() - time_start)
 
 
@@ -105,7 +105,7 @@ def configure_logging(log_level: str, species: str) -> None:
     root_logger.addHandler(file_handler)
 
 
-def create_database_one_species(species: str, n_max: int) -> None:
+def create_tables_for_one_species(species: str, n_max: int) -> None:
     """Create database for a given species."""
     logger.info("Start creating database for %s and version v%s", species, __version__)
     logger.info("n-max=%d", n_max)
