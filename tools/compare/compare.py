@@ -4,14 +4,7 @@ from pathlib import Path
 
 import numpy as np
 import pandas as pd
-
-TABLES = [
-    "matrix_elements_d",
-    "matrix_elements_q",
-    "matrix_elements_o",
-    "matrix_elements_q0",
-    "matrix_elements_mu",
-]
+from generate_database_sqdt.main import MATRIX_ELEMENTS_OF_INTEREST
 
 
 def main() -> None:
@@ -20,7 +13,7 @@ def main() -> None:
 
     compare_states_table(new_path / "states.parquet", old_path / "states.parquet")
 
-    for table_name in TABLES:
+    for table_name in MATRIX_ELEMENTS_OF_INTEREST:
         compare_matrix_elements_table(
             new_path / f"{table_name}.parquet",
             old_path / f"{table_name}.parquet",
