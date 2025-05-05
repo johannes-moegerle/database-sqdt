@@ -1,20 +1,9 @@
 # ruff: noqa: INP001
 
-import logging
 from pathlib import Path
 
 import numpy as np
 import pandas as pd
-
-# Set up logging
-logger = logging.getLogger(__name__)
-logging.basicConfig(
-    level=logging.INFO,
-    format="%(levelname)s %(asctime)s : %(message)s",
-    datefmt="%H:%M:%S",
-    handlers=[logging.StreamHandler()],
-)
-
 
 TABLES = [
     "matrix_elements_d",
@@ -41,9 +30,7 @@ def main() -> None:
 def compare_states_table(new_file: Path, old_file: Path, rtol: float = 1e-5, atol: float = 1e-5) -> None:
     new = pd.read_parquet(new_file)
     old = pd.read_parquet(old_file)
-
-    # diff = new.compare(old, result_names=(new_file.parent.name, old_file.parent.name))  # noqa: ERA001
-    diff = deep_compare(new, old, atol=atol, rtol=rtol)
+    diff = compare_dataframes(new, old, atol=atol, rtol=rtol)
 
     print("Differences in states table:")
     print(diff)
@@ -52,19 +39,18 @@ def compare_states_table(new_file: Path, old_file: Path, rtol: float = 1e-5, ato
 def compare_matrix_elements_table(new_file: Path, old_file: Path, rtol: float = 1e-5, atol: float = 1e-5) -> None:
     new = pd.read_parquet(new_file)
     old = pd.read_parquet(old_file)
-
-    # diff = new.compare(old, result_names=(new_file.parent.name, old_file.parent.name))  # noqa: ERA001
-    diff = deep_compare(new, old, atol=atol, rtol=rtol)
+    diff = compare_dataframes(new, old, atol=atol, rtol=rtol)
 
     print("Differences in matrix elements table:")
     print(diff)
 
 
-def deep_compare(df1: pd.DataFrame, df2: pd.DataFrame, atol: float = 0, rtol: float = 0) -> pd.DataFrame:
-    """Compare two pandas dataframes at a deep level.
+def compare_dataframes(df1: pd.DataFrame, df2: pd.DataFrame, atol: float = 0, rtol: float = 0) -> pd.DataFrame:
+    """Compare two panda dataframes.
 
-    This will return a dataframe with the differences between the two frames
-    explicitly shown.
+    This will return a dataframe with the differences between the two frames explicitly shown.
+    In contrast to a simple `diff = new.compare(old, result_names=(new_file.parent.name, old_file.parent.name))`
+    with this method one can set a tolerance to determine if numerical values are equal.
     See also https://github.com/pandas-dev/pandas/issues/54677
 
 
