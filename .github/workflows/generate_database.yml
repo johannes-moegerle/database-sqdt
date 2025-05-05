@@ -10,7 +10,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        species: [H_textbook, H, Li, Na, K, Rb, Cs, Sr_singlet, Sr_triplet]
+        species: [Cs, Sr_singlet]
     name: ${{ matrix.species }}
     runs-on: ubuntu-latest
     timeout-minutes: 90
@@ -19,7 +19,7 @@ jobs:
     - name: Install uv
       uses: astral-sh/setup-uv@v5
     - name: Run generate_database.py
-      run: uv run generate_database ${{ matrix.species }} --directory database --n-max 220
+      run: uv run generate_database ${{ matrix.species }} --directory database --n-max 30
     - name: Upload artifacts
       uses: actions/upload-artifact@v4
       with:
