@@ -105,10 +105,12 @@ def configure_logging(log_level: str, species: str) -> None:
     root_logger.addHandler(file_handler)
 
 
-def create_tables_for_one_species(species: str, n_max: int) -> None:
+def create_tables_for_one_species(species: str, n_max: int, max_delta_n: int = 10, all_n_up_to: int = 30) -> None:
     """Create database for a given species."""
     logger.info("Start creating database for %s and version v%s", species, __version__)
     logger.info("n-max=%d", n_max)
+    logger.info("max_delta_n=%d", max_delta_n)
+    logger.info("all_n_up_to=%d", all_n_up_to)
     logger.info("ryd_numerov.__version__=%s", ryd_numerov.__version__)
 
     db_file = Path("database.db")
@@ -116,7 +118,7 @@ def create_tables_for_one_species(species: str, n_max: int) -> None:
         conn.executescript((Path(__file__).parent / "database.sql").read_text(encoding="utf-8"))
         list_of_states = get_sorted_list_of_states(species, n_max)
         populate_states_table(list_of_states, conn)
-        populate_matrix_elements_table(list_of_states, conn)
+        populate_matrix_elements_table(list_of_states, conn, max_delta_n, all_n_up_to)
     logger.info("Size of %s: %.6f megabytes", db_file, db_file.stat().st_size * 1e-6)
 
     with sqlite3.connect(db_file) as conn:
@@ -189,10 +191,10 @@ def populate_states_table(list_of_states: list[RydbergState], conn: "sqlite3.Con
     logger.info("Created the 'states' table (%s rows)", conn.execute("SELECT COUNT(*) FROM states").fetchone()[0])
 
 
-def populate_matrix_elements_table(list_of_states: list[RydbergState], conn: "sqlite3.Connection") -> None:
+def populate_matrix_elements_table(
+    list_of_states: list[RydbergState], conn: "sqlite3.Connection", max_delta_n: int, all_n_up_to: int
+) -> None:
     k_angular_max = 3
-    max_delta_n = 10
-    all_n_up_to = 20
 
     element = list_of_states[0].element
     list_of_qns = [(ids, state.n, state.l, state.j) for ids, state in enumerate(list_of_states)]
